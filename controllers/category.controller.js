@@ -22,7 +22,7 @@ module.exports.categoryController = {
 
   getAll: async (_, res) => {
     try {
-      const data = await Category.find();
+      const data = await Category.find().sort({ name: 1 });
       res.json(data);
     } catch (error) {
       handleError(res, error);

@@ -13,7 +13,7 @@ module.exports.brandController = {
 
   getAll: async (_, res) => {
     try {
-      const data = await Brand.find();
+      const data = await Brand.find().sort({ name: 1 });;
       res.json(data);
     } catch (error) {
       handleError(res, error);
