@@ -37,6 +37,7 @@ const perfumeSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  mlsLeft: Number,
 });
 
 const Perfume = mongoose.model("Perfume", perfumeSchema);

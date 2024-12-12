@@ -20,19 +20,48 @@ module.exports.categoryController = {
     }
   },
 
-  getAll: async (_, res) => {
+  // getAll: async (_, res) => {
+  //   try {
+  //     const data = await Category.find().sort({ name: 1 });
+  //     res.json(data);
+  //   } catch (error) {
+  //     handleError(res, error);
+  //   }
+  // },
+
+  getById: async (req, res) => {
     try {
-      const data = await Category.find().sort({ name: 1 });
+      const data = await Category.findById(req.params.id);
       res.json(data);
     } catch (error) {
       handleError(res, error);
     }
   },
-  
-  getById: async (req, res) => {
+
+  getAll: async (_, res) => {
     try {
-      const data = await Category.findById(req.params.id);
-      res.json(data);
+      const result = await Category.aggregate([
+        {
+          $lookup: {
+            from: "perfumes",
+            localField: "_id",
+            foreignField: "categories",
+            as: "perfumes",
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            total: { $size: "$perfumes" },
+          },
+        },
+        {
+          $sort: { name: 1 },
+        },
+      ]);
+
+      res.json(result);
     } catch (error) {
       handleError(res, error);
     }

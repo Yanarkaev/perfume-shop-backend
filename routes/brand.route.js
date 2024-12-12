@@ -4,5 +4,6 @@ const router = Router();
 
 router.post("/", brandController.add);
 router.get("/", brandController.getAll);
+// router.get("/with_counts/", brandController.getWithCounts);
 
 module.exports = router;

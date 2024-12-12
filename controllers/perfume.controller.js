@@ -4,7 +4,6 @@ const mongoose = require("mongoose");
 
 module.exports.perfumeController = {
   add: async (req, res) => {
-
     // вычислить скидку сразу!!! TODO
     if (!req.file) {
       return res.status(400).json({ message: "Image is required" });
@@ -166,8 +165,10 @@ module.exports.perfumeController = {
   getById: async (req, res) => {
     try {
       const data = await Perfume.findById(req.params.id)
-        .populate("brand")
-        .select("-__v")
+        .populate({
+          path: "brand",
+          select: "-__v",
+        })
         .populate({
           path: "categories",
           select: "-__v",
