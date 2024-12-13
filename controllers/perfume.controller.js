@@ -38,6 +38,18 @@ module.exports.perfumeController = {
     }
   },
 
+  getProductNames: async (_, res) => {
+    try {
+      const data = await Perfume.find()
+        .select("name -_id");
+
+      const names = data.map((el) => el.name)
+      res.json(names);
+    } catch (error) {
+      handleError(res, error);
+    }
+  },
+
   // получить количество продуктов брендов категорий алоаылвдоалдыво
 
   getPart: async (req, res) => {

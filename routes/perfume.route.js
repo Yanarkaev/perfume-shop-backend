@@ -6,6 +6,7 @@ const router = Router();
 router.post("/", upload.single("image"), perfumeController.add);
 router.get("/perfume/:id", perfumeController.getById);
 router.get("/all", perfumeController.getAll);
+router.get("/names", perfumeController.getProductNames);
 router.get("/news", perfumeController.getNews);
 router.get("/hits", perfumeController.getHits);
 router.get("/discounts", perfumeController.getDiscounts);
