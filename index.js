@@ -26,7 +26,7 @@ app.use("/orders", orderRoute);
     await mongoose.connect(process.env.SERVER);
     console.log("mongoose connected");
 
-    app.listen(process.env.PORT, "192.168.0.111", () => {
+    app.listen(process.env.PORT, () => {
       console.log(`connected on ${process.env.PORT}`);
     });
   } catch (err) {

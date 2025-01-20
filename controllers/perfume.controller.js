@@ -40,10 +40,9 @@ module.exports.perfumeController = {
 
   getProductNames: async (_, res) => {
     try {
-      const data = await Perfume.find()
-        .select("name -_id");
+      const data = await Perfume.find().select("name -_id");
 
-      const names = data.map((el) => el.name)
+      const names = data.map((el) => el.name);
       res.json(names);
     } catch (error) {
       handleError(res, error);
@@ -52,6 +51,128 @@ module.exports.perfumeController = {
 
   // получить количество продуктов брендов категорий алоаылвдоалдыво
 
+  // getPart: async (req, res) => {
+  //   const {
+  //     name,
+  //     categoryIds,
+  //     priceMin,
+  //     priceMax,
+  //     brandIds,
+  //     limit = 2,
+  //     page = 1,
+  //   } = req.query;
+
+  //   const startIndex = (page - 1) * limit;
+
+  //   let matchStage = {};
+  //   let andConditions = [];
+
+  //   if (priceMin) {
+  //     matchStage.price = { ...matchStage.price, $gte: Number(priceMin) };
+  //   }
+  //   if (priceMax) {
+  //     matchStage.price = { ...matchStage.price, $lte: Number(priceMax) };
+  //   }
+
+  //   if (brandIds) {
+  //     const brandIdsArray = brandIds
+  //       .replace(/\[|\]/g, "")
+  //       .split(",")
+  //       .filter((id) => mongoose.isValidObjectId(id)); // Проверка на валидность ObjectId
+  //     if (brandIdsArray.length > 0) {
+  //       andConditions.push({
+  //         brand: {
+  //           $in: brandIdsArray.map((id) => new mongoose.Types.ObjectId(id)),
+  //         },
+  //       });
+  //     }
+  //   }
+
+  //   if (categoryIds) {
+  //     const categoryIdsArray = categoryIds
+  //       .replace(/\[|\]/g, "")
+  //       .split(",")
+  //       .filter((id) => mongoose.isValidObjectId(id)); // Проверка на валидность ObjectId
+  //     if (categoryIdsArray.length > 0) {
+  //       andConditions.push({
+  //         categories: {
+  //           $in: categoryIdsArray.map((id) => new mongoose.Types.ObjectId(id)),
+  //         },
+  //       });
+  //     }
+  //   }
+
+  //   if (andConditions.length > 0) {
+  //     matchStage.$and = andConditions;
+  //   }
+
+  //   let aggregationPipeline = [
+  //     {
+  //       $match: matchStage,
+  //     },
+  //     {
+  //       $lookup: {
+  //         from: "brands",
+  //         localField: "brand",
+  //         foreignField: "_id",
+  //         as: "brand",
+  //       },
+  //     },
+  //     { $unwind: "$brand" },
+
+  //     {
+  //       $lookup: {
+  //         from: "categories", // Коллекция категорий
+  //         localField: "categories", // Поле в продукте (массив категорий)
+  //         foreignField: "_id", // Поле в коллекции категорий
+  //         as: "categories", // Название нового поля с раскрытыми категориями
+  //       },
+  //     },
+  //     {
+  //       $match: {
+  //         $or: [
+  //           { name: { $regex: new RegExp(name, "i") } }, // Поиск по названию продукта
+  //           { "brand.name": { $regex: new RegExp(name, "i") } }, // Поиск по названию бренда
+  //         ],
+  //       },
+  //     },
+  //     {
+  //       $skip: +startIndex,
+  //     },
+  //     {
+  //       $limit: +limit,
+  //     },
+  //     {
+  //       $project: {
+  //         __v: 0, // Исключаем поле __v из продукта
+  //         "brand.__v": 0, // Исключаем поле __v из бренда
+  //         "categories.__v": 0, // Исключаем поле __v из категорий
+  //       },
+  //     },
+  //   ];
+
+  //   if (priceMin || priceMax) {
+  //     aggregationPipeline.push({
+  //       $sort: { price: 1 },
+  //     });
+  //   }
+
+  //   try {
+  //     const products = await Perfume.aggregate(aggregationPipeline);
+  //     const total = await Perfume.countDocuments(matchStage);
+
+  //     res.json({
+  //       total: total,
+  //       currentPage: page,
+  //       perPage: limit,
+  //       totalPages: Math.ceil(total / limit),
+  //       list: products,
+  //     });
+  //   } catch (err) {
+  //     res.status(500).json({ error: err.message });
+  //   }
+  // },
+
   getPart: async (req, res) => {
     const {
       name,
@@ -59,7 +180,7 @@ module.exports.perfumeController = {
       priceMin,
       priceMax,
       brandIds,
-      limit = 15,
+      limit = 2,
       page = 1,
     } = req.query;
 
@@ -68,6 +189,7 @@ module.exports.perfumeController = {
     let matchStage = {};
     let andConditions = [];
 
+    // Фильтры по цене
     if (priceMin) {
       matchStage.price = { ...matchStage.price, $gte: Number(priceMin) };
     }
@@ -75,6 +197,7 @@ module.exports.perfumeController = {
       matchStage.price = { ...matchStage.price, $lte: Number(priceMax) };
     }
 
+    // Фильтр по брендам
     if (brandIds) {
       const brandIdsArray = brandIds
         .replace(/\[|\]/g, "")
@@ -89,6 +212,7 @@ module.exports.perfumeController = {
       }
     }
 
+    // Фильтр по категориям
     if (categoryIds) {
       const categoryIdsArray = categoryIds
         .replace(/\[|\]/g, "")
@@ -107,6 +231,50 @@ module.exports.perfumeController = {
       matchStage.$and = andConditions;
     }
 
+    // let aggregationPipeline = [
+    //   {
+    //     $match: matchStage,
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "brands",
+    //       localField: "brand",
+    //       foreignField: "_id",
+    //       as: "brand",
+    //     },
+    //   },
+    //   { $unwind: "$brand" },
+    //   {
+    //     $lookup: {
+    //       from: "categories", // Коллекция категорий
+    //       localField: "categories", // Поле в продукте (массив категорий)
+    //       foreignField: "_id", // Поле в коллекции категорий
+    //       as: "categories", // Название нового поля с раскрытыми категориями
+    //     },
+    //   },
+    //   {
+    //     $match: {
+    //       $or: [
+    //         { name: { $regex: new RegExp(name, "i") } }, // Поиск по названию продукта
+    //         { "brand.name": { $regex: new RegExp(name, "i") } }, // Поиск по названию бренда
+    //       ],
+    //     },
+    //   },
+    //   {
+    //     $skip: +startIndex,
+    //   },
+    //   {
+    //     $limit: +limit,
+    //   },
+    //   {
+    //     $project: {
+    //       __v: 0, // Исключаем поле __v из продукта
+    //       "brand.__v": 0, // Исключаем поле __v из бренда
+    //       "categories.__v": 0, // Исключаем поле __v из категорий
+    //     },
+    //   },
+    // ];
+
     let aggregationPipeline = [
       {
         $match: matchStage,
@@ -120,7 +288,6 @@ module.exports.perfumeController = {
         },
       },
       { $unwind: "$brand" },
-
       {
         $lookup: {
           from: "categories", // Коллекция категорий
@@ -132,16 +299,16 @@ module.exports.perfumeController = {
       {
         $match: {
           $or: [
-            { name: { $regex: new RegExp(name, "i") } }, // Поиск по названию продукта
+            { name: { $regex: new RegExp(name, "i") } }, // Поиск по названию товара
             { "brand.name": { $regex: new RegExp(name, "i") } }, // Поиск по названию бренда
           ],
         },
       },
       {
-        $skip: startIndex,
+        $skip: +startIndex,
       },
       {
-        $limit: limit,
+        $limit: +limit,
       },
       {
         $project: {
@@ -152,16 +319,38 @@ module.exports.perfumeController = {
       },
     ];
 
+    // Сортировка по цене, если указан фильтр
     if (priceMin || priceMax) {
       aggregationPipeline.push({
         $sort: { price: 1 },
       });
     }
 
-    try {
-      const products = await Perfume.aggregate(aggregationPipeline);
-      const total = await Perfume.countDocuments(matchStage);
+    // Подсчет общего количества товаров с учетом фильтров по имени и бренду
+    const totalCountAggregation = [
+      {
+        $match: {
+          ...matchStage,
+          $or: [
+            { name: { $regex: new RegExp(name, "i") } }, // Поиск по названию продукта
+            { "brand.name": { $regex: new RegExp(name, "i") } }, // Поиск по названию бренда
+          ],
+        },
+      },
+      {
+        $count: "total",
+      },
+    ];
 
+    try {
+      // Получаем список товаров
+      const products = await Perfume.aggregate(aggregationPipeline);
+
+      // Получаем количество товаров, которые соответствуют фильтру имени и бренда
+      const totalCountResult = await Perfume.aggregate(totalCountAggregation);
+      const total = totalCountResult.length > 0 ? totalCountResult[0].total : 0;
+
+      // Отправляем ответ с результатами пагинации
       res.json({
         total: total,
         currentPage: page,
@@ -173,6 +362,154 @@ module.exports.perfumeController = {
       res.status(500).json({ error: err.message });
     }
   },
+
+  // getPart: async (req, res) => {
+  //   const {
+  //     name,
+  //     categoryIds,
+  //     priceMin,
+  //     priceMax,
+  //     brandIds,
+  //     limit = 2,
+  //     page = 1,
+  //   } = req.query;
+
+  //   const startIndex = (page - 1) * limit;
+
+  //   let matchStage = {};
+  //   let andConditions = [];
+
+  //   // Фильтры по цене
+  //   if (priceMin) {
+  //     matchStage.price = { ...matchStage.price, $gte: Number(priceMin) };
+  //   }
+  //   if (priceMax) {
+  //     matchStage.price = { ...matchStage.price, $lte: Number(priceMax) };
+  //   }
+
+  //   // Фильтр по брендам
+  //   if (brandIds) {
+  //     const brandIdsArray = brandIds
+  //       .replace(/\[|\]/g, "")
+  //       .split(",")
+  //       .filter((id) => mongoose.isValidObjectId(id)); // Проверка на валидность ObjectId
+  //     if (brandIdsArray.length > 0) {
+  //       andConditions.push({
+  //         brand: {
+  //           $in: brandIdsArray.map((id) => new mongoose.Types.ObjectId(id)),
+  //         },
+  //       });
+  //     }
+  //   }
+
+  //   // Фильтр по категориям
+  //   if (categoryIds) {
+  //     const categoryIdsArray = categoryIds
+  //       .replace(/\[|\]/g, "")
+  //       .split(",")
+  //       .filter((id) => mongoose.isValidObjectId(id)); // Проверка на валидность ObjectId
+  //     if (categoryIdsArray.length > 0) {
+  //       andConditions.push({
+  //         categories: {
+  //           $in: categoryIdsArray.map((id) => new mongoose.Types.ObjectId(id)),
+  //         },
+  //       });
+  //     }
+  //   }
+
+  //   if (andConditions.length > 0) {
+  //     matchStage.$and = andConditions;
+  //   }
+
+  //   let aggregationPipeline = [
+  //     {
+  //       $match: matchStage,
+  //     },
+  //     {
+  //       $lookup: {
+  //         from: "brands",
+  //         localField: "brand",
+  //         foreignField: "_id",
+  //         as: "brand",
+  //       },
+  //     },
+  //     { $unwind: "$brand" },
+  //     {
+  //       $lookup: {
+  //         from: "categories", // Коллекция категорий
+  //         localField: "categories", // Поле в продукте (массив категорий)
+  //         foreignField: "_id", // Поле в коллекции категорий
+  //         as: "categories", // Название нового поля с раскрытыми категориями
+  //       },
+  //     },
+  //     {
+  //       $skip: +startIndex,
+  //     },
+  //     {
+  //       $limit: +limit,
+  //     },
+  //     {
+  //       $project: {
+  //         __v: 0, // Исключаем поле __v из продукта
+  //         "brand.__v": 0, // Исключаем поле __v из бренда
+  //         "categories.__v": 0, // Исключаем поле __v из категорий
+  //       },
+  //     },
+  //   ];
+
+  //   // Если задано имя (включая бренд), ищем по имени и бренду
+  //   if (name) {
+  //     aggregationPipeline[3].$match = {
+  //       $or: [
+  //         { name: { $regex: new RegExp(name, "i") } }, // Поиск по названию продукта
+  //         { "brand.name": { $regex: new RegExp(name, "i") } }, // Поиск по названию бренда
+  //       ],
+  //     };
+  //   }
+
+  //   // Сортировка по цене, если указан фильтр
+  //   if (priceMin || priceMax) {
+  //     aggregationPipeline.push({
+  //       $sort: { price: 1 },
+  //     });
+  //   }
+
+  //   // Подсчет общего количества товаров с учетом фильтров по имени и бренду
+  //   const totalCountAggregation = [
+  //     {
+  //       $match: {
+  //         ...matchStage,
+  //         $or: [
+  //           name ? { name: { $regex: new RegExp(name, "i") } } : {}, // Поиск по названию продукта, если указано имя
+  //           name ? { "brand.name": { $regex: new RegExp(name, "i") } } : {}, // Поиск по бренду, если указано имя
+  //         ],
+  //       },
+  //     },
+  //     {
+  //       $count: "total",
+  //     },
+  //   ];
+
+  //   try {
+  //     // Получаем список товаров
+  //     const products = await Perfume.aggregate(aggregationPipeline);
+
+  //     // Получаем количество товаров, которые соответствуют фильтру имени и бренда
+  //     const totalCountResult = await Perfume.aggregate(totalCountAggregation);
+  //     const total = totalCountResult.length > 0 ? totalCountResult[0].total : 0;
+
+  //     // Отправляем ответ с результатами пагинации
+  //     res.json({
+  //       total: total,
+  //       currentPage: page,
+  //       perPage: limit,
+  //       totalPages: Math.ceil(total / limit),
+  //       list: products,
+  //     });
+  //   } catch (err) {
+  //     res.status(500).json({ error: err.message });
+  //   }
+  // },
 
   getById: async (req, res) => {
     try {
